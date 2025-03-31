@@ -17,6 +17,9 @@
     #define TKSTR 261
     #define TKPRINT 262
     #define TKIN 263
+    #define TKWEIGHT 264
+    #define TKNAME 265
+    #define TKCHILDOF 266
 %}
 
 LETTER [a-zA-Z]
@@ -28,8 +31,11 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
 %%
 
 [ \t\n\r\f\v]   { /* ignore whitespace */ }
+"isachildof"    { return TKCHILDOF; }
 "buildnode"     { return TKNODE; }
+"weight"        { return TKWEIGHT; }
 "print"         { return TKPRINT; }
+"name"          { return TKNAME; }
 "for"           { return TKFOR; }
 "in"            { return TKIN; }
 "{"             { return '{'; }
@@ -61,6 +67,9 @@ int main(){
             case TKID: cout << "TKID: " << yytext << endl; break;
             case TKINT: cout << "TKINT: " << yytext << endl; break;
             case TKNODE: cout << "TKNODE" << endl; break;
+            case TKWEIGHT: cout << "TKWEIGHT" << endl; break;
+            case TKNAME: cout << "TKNAME" << endl; break;
+            case TKCHILDOF: cout << "TKCHILDOF" << endl; break;
             case TKFOR: cout << "TKFOR" << endl; break;
             case TKSTR: cout << "TKSTR: " << yytext << endl; break;
             case TKPRINT: cout << "TKPRINT" << endl; break;
