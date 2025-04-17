@@ -1,0 +1,10 @@
+buildnode{
+name="root";
+weight=10;
+};
+
+buildnode{
+name="child1";
+weight=5;
+isachildof="root";
+};

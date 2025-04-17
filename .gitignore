@@ -1,2 +1,4 @@
-lexer
 lex.yy.c
+parser.tab.c
+parser.tab.h
+tree_builder

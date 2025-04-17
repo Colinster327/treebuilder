@@ -9,6 +9,23 @@
     #include <iostream>    
 
     using namespace std;
+
+    int linecount=1;
+    int indent;
+    int n;
+
+    void ACC(char c)
+    {
+      if (c == '\n')
+        {
+          linecount++;
+        }
+    }
+
+    int line_nmb()
+    {
+      return linecount;
+    }
 %}
 
 LETTER [a-zA-Z]
@@ -39,7 +56,8 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
 ":"             { return ':'; }
 ","             { return ','; }
 {STR}           {
-                  yylval.s_val = strdup(yytext);
+                  yytext[strlen(yytext) - 1] = '\0';
+                  yylval.s_val = strdup(yytext + 1);
                   return TKSTR;
                 }
 {INT}           {
@@ -54,3 +72,7 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
 .               { /* ignore other characters */ }
 
 %%
+
+int yywrap() {
+    return 1;  // Indicate end of input
+}

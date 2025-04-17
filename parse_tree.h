@@ -7,16 +7,21 @@
 
 using namespace std;
 
+#ifndef PARSE_TREE_H
+#define PARSE_TREE_H
+
 // Begin Integer Expression Classes
 class integer_expression {
 public:
-  virtual ~integer_expression() {}
   virtual int evaluate_expression(map<string, TreeNode *> &sym_tab) = 0;
 };
 
 class int_constant : public integer_expression {
 public:
-  int_constant(int val) { saved_val = val; }
+  int_constant(int val) {
+    cout << "int constant" << endl;
+    saved_val = val;
+  }
 
   virtual int evaluate_expression(map<string, TreeNode *> &sym_tab) {
     return saved_val;
@@ -29,12 +34,9 @@ private:
 class int_plus_expr : public integer_expression {
 public:
   int_plus_expr(integer_expression *left, integer_expression *right) {
+    cout << "int plus expr" << endl;
     l = left;
     r = right;
-  }
-  virtual ~int_plus_expr() {
-    delete l;
-    delete r;
   }
 
   virtual int evaluate_expression(map<string, TreeNode *> &sym_tab) {
@@ -50,13 +52,15 @@ private:
 // Begin String Expression Classes
 class string_expression {
 public:
-  virtual ~string_expression() {}
   virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) = 0;
 };
 
 class string_constant : public string_expression {
 public:
-  string_constant(string val) { saved_val = val; }
+  string_constant(string val) {
+    cout << "string constant" << endl;
+    saved_val = val;
+  }
 
   virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) {
     return saved_val;
@@ -69,13 +73,9 @@ private:
 class string_plus_expr : public string_expression {
 public:
   string_plus_expr(string_expression *left, string_expression *right) {
+    cout << "string plus expr" << endl;
     l = left;
     r = right;
-  }
-
-  virtual ~string_plus_expr() {
-    delete l;
-    delete r;
   }
 
   virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) {
@@ -90,6 +90,7 @@ private:
 class string_int_plus_expr : public string_expression {
 public:
   string_int_plus_expr(string_expression *left, integer_expression *right) {
+    cout << "string int plus expr" << endl;
     ls = left;
     rs = NULL;
     li = NULL;
@@ -97,25 +98,11 @@ public:
   }
 
   string_int_plus_expr(integer_expression *left, string_expression *right) {
+    cout << "int string plus expr" << endl;
     ls = NULL;
     li = left;
     rs = right;
     ri = NULL;
-  }
-
-  virtual ~string_int_plus_expr() {
-    if (ls) {
-      delete ls;
-    }
-    if (rs) {
-      delete rs;
-    }
-    if (li) {
-      delete li;
-    }
-    if (ri) {
-      delete ri;
-    }
   }
 
   virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) {
@@ -146,17 +133,9 @@ public:
 class compound_statement : public statement {
 public:
   compound_statement(statement *first, compound_statement *rest) {
+    cout << "compound statement" << endl;
     f = first;
     r = rest;
-  }
-
-  virtual ~compound_statement() {
-    if (f) {
-      delete f;
-    }
-    if (r) {
-      delete r;
-    }
   }
 
   virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) {
@@ -175,9 +154,10 @@ private:
 
 class print_statement : public statement {
 public:
-  print_statement(string_expression *expr) { e = expr; }
-
-  virtual ~print_statement() { delete e; }
+  print_statement(string_expression *expr) {
+    cout << "print statement" << endl;
+    e = expr;
+  }
 
   virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) {
     map<string, TreeNode *>::iterator it;
@@ -190,12 +170,14 @@ public:
       if (node->children.size() > 0) {
         cout << "[";
         print_statement *children_print;
+        string_constant *child_name;
         for (size_t i = 0; i < node->children.size(); ++i) {
-          children_print =
-              new print_statement(new string_constant(node->children[i]->name));
+          child_name = new string_constant(node->children[i]->name);
+          children_print = new print_statement(child_name);
           children_print->evaluate_statement(sym_tab);
-          delete children_print;
           cout << (i < node->children.size() - 1 ? ", " : "");
+          delete children_print;
+          delete child_name;
         }
         cout << "]" << endl;
       }
@@ -212,23 +194,17 @@ class node_statement : public statement {
 public:
   node_statement(string_expression *name, integer_expression *weight,
                  string_expression *parent) {
+    cout << "node statement" << endl;
     n = name;
     w = weight;
     p = parent;
   }
 
   node_statement(string_expression *name, integer_expression *weight) {
+    cout << "node statement" << endl;
     n = name;
     w = weight;
     p = NULL;
-  }
-
-  virtual ~node_statement() {
-    delete n;
-    delete w;
-    if (p) {
-      delete p;
-    }
   }
 
   virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) {
@@ -265,3 +241,6 @@ private:
   integer_expression *w;
   string_expression *p;
 };
+// End Statement Classes
+
+#endif // PARSE_TREE_H
