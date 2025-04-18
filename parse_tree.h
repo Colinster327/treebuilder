@@ -18,10 +18,7 @@ public:
 
 class int_constant : public integer_expression {
 public:
-  int_constant(int val) {
-    cout << "int constant" << endl;
-    saved_val = val;
-  }
+  int_constant(int val) { saved_val = val; }
 
   virtual int evaluate_expression(map<string, TreeNode *> &sym_tab) {
     return saved_val;
@@ -34,7 +31,6 @@ private:
 class int_plus_expr : public integer_expression {
 public:
   int_plus_expr(integer_expression *left, integer_expression *right) {
-    cout << "int plus expr" << endl;
     l = left;
     r = right;
   }
@@ -57,10 +53,7 @@ public:
 
 class string_constant : public string_expression {
 public:
-  string_constant(string val) {
-    cout << "string constant" << endl;
-    saved_val = val;
-  }
+  string_constant(string val) { saved_val = val; }
 
   virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) {
     return saved_val;
@@ -73,7 +66,6 @@ private:
 class string_plus_expr : public string_expression {
 public:
   string_plus_expr(string_expression *left, string_expression *right) {
-    cout << "string plus expr" << endl;
     l = left;
     r = right;
   }
@@ -90,7 +82,6 @@ private:
 class string_int_plus_expr : public string_expression {
 public:
   string_int_plus_expr(string_expression *left, integer_expression *right) {
-    cout << "string int plus expr" << endl;
     ls = left;
     rs = NULL;
     li = NULL;
@@ -98,7 +89,6 @@ public:
   }
 
   string_int_plus_expr(integer_expression *left, string_expression *right) {
-    cout << "int string plus expr" << endl;
     ls = NULL;
     li = left;
     rs = right;
@@ -133,7 +123,6 @@ public:
 class compound_statement : public statement {
 public:
   compound_statement(statement *first, compound_statement *rest) {
-    cout << "compound statement" << endl;
     f = first;
     r = rest;
   }
@@ -154,54 +143,53 @@ private:
 
 class print_statement : public statement {
 public:
-  print_statement(string_expression *expr) {
-    cout << "print statement" << endl;
-    e = expr;
-  }
+  print_statement(string_expression *expr) { e = expr; }
 
   virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) {
     map<string, TreeNode *>::iterator it;
     it = sym_tab.find(e->evaluate_expression(sym_tab));
 
     if (it != sym_tab.end()) {
-      TreeNode *node = it->second;
-      cout << node->name;
-
-      if (node->children.size() > 0) {
-        cout << "[";
-        print_statement *children_print;
-        string_constant *child_name;
-        for (size_t i = 0; i < node->children.size(); ++i) {
-          child_name = new string_constant(node->children[i]->name);
-          children_print = new print_statement(child_name);
-          children_print->evaluate_statement(sym_tab);
-          cout << (i < node->children.size() - 1 ? ", " : "");
-          delete children_print;
-          delete child_name;
-        }
-        cout << "]" << endl;
-      }
+      this->traverse_tree(it->second);
     } else {
       cout << "Error: Variable not found in symbol table." << endl;
     }
+    cout << endl;
   }
 
 private:
   string_expression *e;
+
+  void traverse_tree(TreeNode *node) {
+    if (node == NULL) {
+      return;
+    }
+
+    cout << node->name;
+
+    if (node->children.size() > 0) {
+      cout << "[";
+      for (size_t i = 0; i < node->children.size(); ++i) {
+        traverse_tree(node->children[i]);
+        if (i < node->children.size() - 1) {
+          cout << ", ";
+        }
+      }
+      cout << "]";
+    }
+  }
 };
 
 class node_statement : public statement {
 public:
   node_statement(string_expression *name, integer_expression *weight,
                  string_expression *parent) {
-    cout << "node statement" << endl;
     n = name;
     w = weight;
     p = parent;
   }
 
   node_statement(string_expression *name, integer_expression *weight) {
-    cout << "node statement" << endl;
     n = name;
     w = weight;
     p = NULL;

@@ -53,7 +53,7 @@ statement:
   ;
 
 integer_expression:
-  | TKINT { $$ = new int_constant(stoi($1)); }
+  | TKINT { $$ = new int_constant(atoi($1)); }
   | integer_expression '+' integer_expression
     { $$ = new int_plus_expr($1, $3); }
   ;
@@ -84,7 +84,8 @@ node_statement:
 #include "lex.yy.c"
 
 void yyerror(const char* s) {
-    fprintf(stderr, "%s\n", s);
+  cout << "Error : " << s << "  on line " << line_nmb() << endl;
+  exit(-1);
 }
 
 
