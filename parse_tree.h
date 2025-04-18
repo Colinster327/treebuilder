@@ -6,125 +6,100 @@
  */
 
 #include "tree_node.h"
-#include <algorithm>
 #include <iostream>
 #include <map>
-#include <set>
 #include <string>
+#include <variant>
 
 using namespace std;
 
 #ifndef PARSE_TREE_H
 #define PARSE_TREE_H
 
-// Begin Integer Expression Classes
-class integer_expression {
+// Begin Expression Classes
+class expression {
 public:
-  virtual int evaluate_expression(map<string, TreeNode *> &sym_tab) = 0;
+  virtual variant<int, string>
+  evaluate_expression(map<string, TreeNode *> &tree_tab,
+                      map<string, variant<int, string>> &var_tab) = 0;
 };
 
-class int_constant : public integer_expression {
+class constant : public expression {
 public:
-  int_constant(int val) { saved_val = val; }
+  constant(variant<int, string> val) { saved_val = val; }
 
-  virtual int evaluate_expression(map<string, TreeNode *> &sym_tab) {
+  virtual variant<int, string>
+  evaluate_expression(map<string, TreeNode *> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
     return saved_val;
   }
 
 private:
-  int saved_val;
+  variant<int, string> saved_val;
 };
 
-class int_plus_expr : public integer_expression {
+class variable : public expression {
 public:
-  int_plus_expr(integer_expression *left, integer_expression *right) {
-    l = left;
-    r = right;
-  }
+  variable(string name) { saved_name = name; }
 
-  virtual int evaluate_expression(map<string, TreeNode *> &sym_tab) {
-    return l->evaluate_expression(sym_tab) + r->evaluate_expression(sym_tab);
-  }
-
-private:
-  integer_expression *l;
-  integer_expression *r;
-};
-// End Integer Expression Classes
-
-// Begin String Expression Classes
-class string_expression {
-public:
-  virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) = 0;
-};
-
-class string_constant : public string_expression {
-public:
-  string_constant(string val) { saved_val = val; }
-
-  virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) {
-    return saved_val;
-  }
-
-private:
-  string saved_val;
-};
-
-class string_plus_expr : public string_expression {
-public:
-  string_plus_expr(string_expression *left, string_expression *right) {
-    l = left;
-    r = right;
-  }
-
-  virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) {
-    return l->evaluate_expression(sym_tab) + r->evaluate_expression(sym_tab);
-  }
-
-private:
-  string_expression *l;
-  string_expression *r;
-};
-
-class string_int_plus_expr : public string_expression {
-public:
-  string_int_plus_expr(string_expression *left, integer_expression *right) {
-    ls = left;
-    rs = NULL;
-    li = NULL;
-    ri = right;
-  }
-
-  string_int_plus_expr(integer_expression *left, string_expression *right) {
-    ls = NULL;
-    li = left;
-    rs = right;
-    ri = NULL;
-  }
-
-  virtual string evaluate_expression(map<string, TreeNode *> &sym_tab) {
-    if (ls) {
-      return ls->evaluate_expression(sym_tab) +
-             to_string(ri->evaluate_expression(sym_tab));
+  virtual variant<int, string>
+  evaluate_expression(map<string, TreeNode *> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
+    auto it = var_tab.find(saved_name);
+    if (it != var_tab.end()) {
+      return it->second;
     } else {
-      return to_string(li->evaluate_expression(sym_tab)) +
-             rs->evaluate_expression(sym_tab);
+      cout << "Error: Variable not found in symbol table." << endl;
+      return {};
     }
   }
 
 private:
-  string_expression *ls;
-  string_expression *rs;
-  integer_expression *li;
-  integer_expression *ri;
+  string saved_name;
 };
-// End String Expression Classes
+
+class plus_expr : public expression {
+public:
+  plus_expr(expression *left, expression *right) {
+    l = left;
+    r = right;
+  }
+
+  virtual variant<int, string>
+  evaluate_expression(map<string, TreeNode *> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
+    auto left_val = l->evaluate_expression(sym_tab, var_tab);
+    auto right_val = r->evaluate_expression(sym_tab, var_tab);
+
+    if (holds_alternative<int>(left_val) && holds_alternative<int>(right_val)) {
+      return get<int>(left_val) + get<int>(right_val);
+    } else if (holds_alternative<string>(left_val) &&
+               holds_alternative<string>(right_val)) {
+      return get<string>(left_val) + get<string>(right_val);
+    } else if (holds_alternative<int>(left_val) &&
+               holds_alternative<string>(right_val)) {
+      return to_string(get<int>(left_val)) + get<string>(right_val);
+    } else if (holds_alternative<string>(left_val) &&
+               holds_alternative<int>(right_val)) {
+      return get<string>(left_val) + to_string(get<int>(right_val));
+    } else {
+      cout << "Error: Invalid types for addition." << endl;
+      return {};
+    }
+  }
+
+private:
+  expression *l;
+  expression *r;
+};
+// End Expression Classes
 
 // Begin Statement Classes
 class statement {
 public:
-  virtual ~statement() {}
-  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) = 0;
+  virtual void
+  evaluate_statement(map<string, TreeNode *> &tree_tab,
+                     map<string, variant<int, string>> &var_tab) = 0;
 };
 
 class compound_statement : public statement {
@@ -134,12 +109,13 @@ public:
     r = rest;
   }
 
-  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) {
+  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab,
+                                  map<string, variant<int, string>> &var_tab) {
     if (f != NULL) {
-      f->evaluate_statement(sym_tab);
+      f->evaluate_statement(sym_tab, var_tab);
     }
     if (r != NULL) {
-      r->evaluate_statement(sym_tab);
+      r->evaluate_statement(sym_tab, var_tab);
     }
   }
 
@@ -150,11 +126,17 @@ private:
 
 class print_statement : public statement {
 public:
-  print_statement(string_expression *expr) { e = expr; }
+  print_statement(expression *expr) { e = expr; }
 
-  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) {
+  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab,
+                                  map<string, variant<int, string>> &var_tab) {
+    auto val = e->evaluate_expression(sym_tab, var_tab);
+    if (holds_alternative<int>(val)) {
+      cout << "Error: Cannot print integer value." << endl;
+      return;
+    }
     map<string, TreeNode *>::iterator it;
-    it = sym_tab.find(e->evaluate_expression(sym_tab));
+    it = sym_tab.find(get<string>(val));
 
     if (it != sym_tab.end()) {
       this->traverse_tree(it->second);
@@ -165,7 +147,7 @@ public:
   }
 
 private:
-  string_expression *e;
+  expression *e;
 
   void traverse_tree(TreeNode *node) {
     if (node == NULL) {
@@ -189,36 +171,56 @@ private:
 
 class node_statement : public statement {
 public:
-  node_statement(string_expression *name, integer_expression *weight,
-                 string_expression *parent) {
+  node_statement(expression *name, expression *weight, expression *parent) {
     n = name;
     w = weight;
     p = parent;
   }
 
-  node_statement(string_expression *name, integer_expression *weight) {
+  node_statement(expression *name, expression *weight) {
     n = name;
     w = weight;
     p = NULL;
   }
 
-  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab) {
-    string node_name = n->evaluate_expression(sym_tab);
-    int node_weight = w->evaluate_expression(sym_tab);
-    string parent_name;
+  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab,
+                                  map<string, variant<int, string>> &var_tab) {
+    auto name_v = n->evaluate_expression(sym_tab, var_tab);
+    auto weight_v = w->evaluate_expression(sym_tab, var_tab);
+    variant<int, string> parent_v;
+
+    if (holds_alternative<int>(name_v)) {
+      cout << "Error: Node name cannot be an integer." << endl;
+      return;
+    }
+
+    if (holds_alternative<string>(weight_v)) {
+      cout << "Error: Node weight cannot be a string." << endl;
+      return;
+    }
 
     if (p) {
-      parent_name = p->evaluate_expression(sym_tab);
+      parent_v = p->evaluate_expression(sym_tab, var_tab);
+
+      if (holds_alternative<int>(parent_v)) {
+        cout << "Error: Parent name cannot be an integer." << endl;
+        return;
+      }
     }
+
+    string node_name = get<string>(name_v);
+    int node_weight = get<int>(weight_v);
 
     if (sym_tab.find(node_name) != sym_tab.end()) {
       cout << "Error: Node already exists in symbol table." << endl;
       return;
     }
+
     TreeNode *new_node = new TreeNode(node_name, node_weight);
     sym_tab[node_name] = new_node;
 
-    if (!parent_name.empty()) {
+    if (p) {
+      string parent_name = get<string>(parent_v);
       map<string, TreeNode *>::iterator it;
       it = sym_tab.find(parent_name);
 
@@ -232,9 +234,9 @@ public:
   }
 
 private:
-  string_expression *n;
-  integer_expression *w;
-  string_expression *p;
+  expression *n;
+  expression *w;
+  expression *p;
 };
 // End Statement Classes
 

@@ -6,22 +6,7 @@
     * Description: This file contains the lexical analyzer for a tree builder language.
     */
 
-    #include <iostream>    
-
-    using namespace std;
-
     int linecount=1;
-    int indent;
-    int n;
-
-    void ACC(char c)
-    {
-      if (c == '\n')
-        {
-          linecount++;
-        }
-    }
-
     int line_nmb()
     {
       return linecount;
@@ -36,7 +21,7 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
 
 %%
 
-[ \t\n\r\f\v]   { /* ignore whitespace */ }
+[ \t\n\r\f\v]   { linecount ++; }
 "isachildof"    { return TKCHILDOF; }
 "buildnode"     { return TKNODE; }
 "weight"        { return TKWEIGHT; }
