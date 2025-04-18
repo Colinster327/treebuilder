@@ -1,6 +1,6 @@
 %{
     /*
-    * lexer.l
+    * tree_builder.l
     * Authors: Colin Murphy, Brock Klamfoth
     * Date: 2024-03-28
     * Description: This file contains the lexical analyzer for a tree builder language.

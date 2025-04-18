@@ -3,6 +3,13 @@
 %left '+'
 
 %{
+  /*
+  * tree_builder.y
+  * Authors: Colin Murphy, Brock Klamfoth
+  * Date: 2024-04-17
+  * Description: This file contains the parser for a tree builder language.
+  */
+
   #include <map>
   #include <string>
   #include "parse_tree.h"

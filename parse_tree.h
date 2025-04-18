@@ -1,3 +1,10 @@
+/*
+ * parse_tree.h
+ * Authors: Colin Murphy, Brock Klamfoth
+ * Date: 2024-04-17
+ * Description: This file contains the parse tree for a tree builder language.
+ */
+
 #include "tree_node.h"
 #include <algorithm>
 #include <iostream>
