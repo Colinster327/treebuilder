@@ -61,6 +61,10 @@ expression:
   | TKSTR { $$ = new constant($1); }
   | TKID { $$ = new variable($1); }
   | expression '+' expression { $$ = new plus_expr($1, $3); }
+  | expression '-' expression { $$ = new minus_expr($1, $3); }
+  | expression '*' expression { $$ = new times_expr($1, $3); }
+  | expression '/' expression { $$ = new divide_expr($1, $3); }
+  | expression '%' expression { $$ = new mod_expr($1, $3); }
   ;
 
 print_statement: 

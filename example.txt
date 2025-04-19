@@ -5,7 +5,7 @@ buildnode {
 
 for i in [1:10] {
   buildnode {
-    name = "A" + i;
+    name="A" + i;
     weight = 3 + i + 1;
     isachildof = "root";
   };

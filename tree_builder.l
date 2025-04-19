@@ -36,6 +36,10 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
 "["             { return '['; }
 "]"             { return ']'; }
 "+"             { return '+'; }
+"-"             { return '-'; }
+"*"             { return '*'; }
+"/"             { return '/'; }
+"%"             { return '%'; }
 "="             { return '='; }
 ";"             { return ';'; }
 ":"             { return ':'; }
