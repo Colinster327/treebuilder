@@ -46,43 +46,43 @@ start_var : prog
   ;
 
 prog:
-  | statement  prog { $$ = new compound_statement($1,$2); }
+  statement  prog { $$ = new compound_statement($1,$2); }
   | { $$ = NULL; }
   ;
 
 statement: 
-  | print_statement { $$ = $1; }
+  print_statement { $$ = $1; }
   | node_statement { $$ = $1; }
   | for_statement { $$ = $1; }
   ;
 
 expression:
-  | TKINT { $$ = new constant(atoi($1)); }
+  TKINT { $$ = new constant(atoi($1)); }
   | TKSTR { $$ = new constant($1); }
   | TKID { $$ = new variable($1); }
   | expression '+' expression { $$ = new plus_expr($1, $3); }
   ;
 
 print_statement: 
-  | TKPRINT '(' expression ')' ';' { $$ = new print_statement($3); }
+  TKPRINT '(' expression ')' ';' { $$ = new print_statement($3); }
   ;
 
 node_statement: 
-  | TKNODE '{' TKNAME '=' expression ';' TKWEIGHT '=' expression ';' TKCHILDOF '=' expression ';' '}' ';'
+  TKNODE '{' TKNAME '=' expression ';' TKWEIGHT '=' expression ';' TKCHILDOF '=' expression ';' '}' ';'
     { $$ = new node_statement($5, $9, $13); }
   | TKNODE '{' TKNAME '=' expression ';' TKWEIGHT '=' expression ';' '}' ';'
     { $$ = new node_statement($5, $9); }
   ;
 
 for_statement:
-  | TKFOR TKID TKIN '[' expression ':' expression ']' '{' prog '}' ';'
+  TKFOR TKID TKIN '[' expression ':' expression ']' '{' prog '}' ';'
     { $$ = new for_statement($2, $5, $7, $10); }
   | TKFOR TKID TKIN '[' expression_list ']' '{' prog '}' ';'
     { $$ = new for_statement($2, $5, $8); }
   ;
 
 expression_list:
-  | expression { $$ = new vector<expression *>(); $$->push_back($1); }
+  expression { $$ = new vector<expression *>(); $$->push_back($1); }
   | expression_list ',' expression { $$ = $1; $$->push_back($3); }
   ;
 
