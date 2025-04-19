@@ -13,7 +13,7 @@ for i in ["A", "B", "C", "D"] {
 
 for i in [1:3] {
     buildnode {
-        name = "A" + 4 - i;
+        name = 4 - i + "A";
         weight = 4;
         isachildof = "A";
     };

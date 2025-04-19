@@ -1,6 +1,8 @@
 %start start_var
 %token TKID TKINT TKNODE TKFOR TKSTR TKPRINT TKIN TKWEIGHT TKNAME TKCHILDOF
-%left '+'
+%left '+' '-'
+%left '*' '/' '%'
+%right '='
 
 %{
   /*
