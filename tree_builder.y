@@ -2,7 +2,6 @@
 %token TKID TKINT TKNODE TKFOR TKSTR TKPRINT TKIN TKWEIGHT TKNAME TKCHILDOF
 %left '+' '-'
 %left '*' '/' '%'
-%right '='
 
 %{
   /*
@@ -67,6 +66,7 @@ expression:
   | expression '*' expression { $$ = new times_expr($1, $3); }
   | expression '/' expression { $$ = new divide_expr($1, $3); }
   | expression '%' expression { $$ = new mod_expr($1, $3); }
+  | '(' expression ')' { $$ = $2; }
   ;
 
 print_statement: 

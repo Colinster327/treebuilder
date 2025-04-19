@@ -36,7 +36,6 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
 "["             { return '['; }
 "]"             { return ']'; }
 "+"             { return '+'; }
-"-"             { return '-'; }
 "*"             { return '*'; }
 "/"             { return '/'; }
 "%"             { return '%'; }
@@ -53,7 +52,7 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
                   yylval.s_val = strdup(yytext);
                   return TKINT;
                 }
-
+"-"             { return '-'; }
 {ID}            {
                   yylval.s_val = strdup(yytext);
                   return TKID; 
