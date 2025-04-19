@@ -10,15 +10,10 @@ using namespace std;
 struct TreeNode {
   string name;
   int weight;
-  vector<TreeNode *> children;
+  vector<shared_ptr<TreeNode>> children;
 
   TreeNode(const string name, int weight) : name(name), weight(weight) {
     children.clear();
-  }
-  ~TreeNode() {
-    for (auto child : children) {
-      delete child;
-    }
   }
 };
 

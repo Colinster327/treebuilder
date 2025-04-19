@@ -21,7 +21,7 @@ using namespace std;
 class expression {
 public:
   virtual variant<int, string>
-  evaluate_expression(map<string, TreeNode *> &tree_tab,
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &tree_tab,
                       map<string, variant<int, string>> &var_tab) = 0;
 };
 
@@ -30,7 +30,7 @@ public:
   constant(variant<int, string> val) { saved_val = val; }
 
   virtual variant<int, string>
-  evaluate_expression(map<string, TreeNode *> &sym_tab,
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
                       map<string, variant<int, string>> &var_tab) {
     return saved_val;
   }
@@ -44,7 +44,7 @@ public:
   variable(string name) { saved_name = name; }
 
   virtual variant<int, string>
-  evaluate_expression(map<string, TreeNode *> &sym_tab,
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
                       map<string, variant<int, string>> &var_tab) {
     auto it = var_tab.find(saved_name);
     if (it != var_tab.end()) {
@@ -67,7 +67,7 @@ public:
   }
 
   virtual variant<int, string>
-  evaluate_expression(map<string, TreeNode *> &sym_tab,
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
                       map<string, variant<int, string>> &var_tab) {
     auto left_val = l->evaluate_expression(sym_tab, var_tab);
     auto right_val = r->evaluate_expression(sym_tab, var_tab);
@@ -99,7 +99,7 @@ private:
 class statement {
 public:
   virtual void
-  evaluate_statement(map<string, TreeNode *> &tree_tab,
+  evaluate_statement(map<string, shared_ptr<TreeNode>> &tree_tab,
                      map<string, variant<int, string>> &var_tab) = 0;
 };
 
@@ -110,7 +110,7 @@ public:
     r = rest;
   }
 
-  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab,
+  virtual void evaluate_statement(map<string, shared_ptr<TreeNode>> &sym_tab,
                                   map<string, variant<int, string>> &var_tab) {
     if (f != NULL) {
       f->evaluate_statement(sym_tab, var_tab);
@@ -129,14 +129,14 @@ class print_statement : public statement {
 public:
   print_statement(expression *expr) { e = expr; }
 
-  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab,
+  virtual void evaluate_statement(map<string, shared_ptr<TreeNode>> &sym_tab,
                                   map<string, variant<int, string>> &var_tab) {
     auto val = e->evaluate_expression(sym_tab, var_tab);
     if (holds_alternative<int>(val)) {
       cout << "Error: Cannot print integer value." << endl;
       return;
     }
-    map<string, TreeNode *>::iterator it;
+    map<string, shared_ptr<TreeNode>>::iterator it;
     it = sym_tab.find(get<string>(val));
 
     if (it != sym_tab.end()) {
@@ -150,7 +150,7 @@ public:
 private:
   expression *e;
 
-  void traverse_tree(TreeNode *node) {
+  void traverse_tree(shared_ptr<TreeNode> node) {
     if (node == NULL) {
       return;
     }
@@ -184,7 +184,7 @@ public:
     p = NULL;
   }
 
-  virtual void evaluate_statement(map<string, TreeNode *> &sym_tab,
+  virtual void evaluate_statement(map<string, shared_ptr<TreeNode>> &sym_tab,
                                   map<string, variant<int, string>> &var_tab) {
     auto name_v = n->evaluate_expression(sym_tab, var_tab);
     auto weight_v = w->evaluate_expression(sym_tab, var_tab);
@@ -217,16 +217,16 @@ public:
       return;
     }
 
-    TreeNode *new_node = new TreeNode(node_name, node_weight);
+    auto new_node = make_shared<TreeNode>(node_name, node_weight);
     sym_tab[node_name] = new_node;
 
     if (p) {
       string parent_name = get<string>(parent_v);
-      map<string, TreeNode *>::iterator it;
+      map<string, shared_ptr<TreeNode>>::iterator it;
       it = sym_tab.find(parent_name);
 
       if (it != sym_tab.end()) {
-        TreeNode *parent_node = it->second;
+        auto parent_node = it->second;
         parent_node->children.push_back(new_node);
       } else {
         cout << "Error: Parent node not found in symbol table." << endl;
@@ -260,7 +260,7 @@ public:
     e = NULL;
   }
 
-  virtual void evaluate_statement(map<string, TreeNode *> &tree_tab,
+  virtual void evaluate_statement(map<string, shared_ptr<TreeNode>> &tree_tab,
                                   map<string, variant<int, string>> &var_tab) {
     if (s && e) {
       auto start_val = s->evaluate_expression(tree_tab, var_tab);

@@ -38,7 +38,7 @@
 
 start_var : prog
   { 
-    map<string,TreeNode *> tree_tab;
+    map<string,shared_ptr<TreeNode>> tree_tab;
     map<string, variant<int, string>> var_tab;
     $$= $1;
     $1->evaluate_statement(tree_tab, var_tab);
