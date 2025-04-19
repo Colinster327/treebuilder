@@ -67,6 +67,7 @@ expression:
   | expression '/' expression { $$ = new divide_expr($1, $3); }
   | expression '%' expression { $$ = new mod_expr($1, $3); }
   | '(' expression ')' { $$ = $2; }
+  | '-' expression  { $$ = new negate_expr($2); }
   ;
 
 print_statement: 

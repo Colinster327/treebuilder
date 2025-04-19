@@ -100,14 +100,14 @@ public:
     l = left;
     r = right;
   }
-  
+
   virtual variant<int, string>
-  evaluate_expression (map<string, shared_ptr<TreeNode>> &sym_tab,
-                                   map<string, variant<int, string>> &var_tab) {
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
     auto left_val = l->evaluate_expression(sym_tab, var_tab);
     auto right_val = r->evaluate_expression(sym_tab, var_tab);
     if (holds_alternative<int>(left_val) && holds_alternative<int>(right_val)) {
-          return get<int>(left_val) - get<int>(right_val);
+      return get<int>(left_val) - get<int>(right_val);
     } else {
       cout << "Error: Invalid types for subtraction." << endl;
       return {};
@@ -120,28 +120,28 @@ private:
 };
 
 class times_expr : public expression {
-  public:
-    times_expr(expression *left, expression *right) {
-      l = left;
-      r = right;
+public:
+  times_expr(expression *left, expression *right) {
+    l = left;
+    r = right;
+  }
+  virtual variant<int, string>
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
+    auto left_val = l->evaluate_expression(sym_tab, var_tab);
+    auto right_val = r->evaluate_expression(sym_tab, var_tab);
+    if (holds_alternative<int>(left_val) && holds_alternative<int>(right_val)) {
+      return get<int>(left_val) * get<int>(right_val);
+    } else {
+      cout << "Error: Invalid types for multiplication." << endl;
+      return {};
     }
-    virtual variant<int, string>
-    evaluate_expression (map<string, shared_ptr<TreeNode>> &sym_tab,
-                                     map<string, variant<int, string>> &var_tab) {
-      auto left_val = l->evaluate_expression(sym_tab, var_tab);
-      auto right_val = r->evaluate_expression(sym_tab, var_tab);
-      if (holds_alternative<int>(left_val) && holds_alternative<int>(right_val)) {
-            return get<int>(left_val) * get<int>(right_val);
-      } else {
-        cout << "Error: Invalid types for multiplication." << endl;
-        return {};
-      }
-    }
-    
-  private:
-    expression *l;
-    expression *r;
-  };
+  }
+
+private:
+  expression *l;
+  expression *r;
+};
 
 class divide_expr : public expression {
 public:
@@ -150,13 +150,13 @@ public:
     r = right;
   }
   virtual variant<int, string>
-  evaluate_expression (map<string, shared_ptr<TreeNode>> &sym_tab,
-                                   map<string, variant<int, string>> &var_tab) {
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
     auto left_val = l->evaluate_expression(sym_tab, var_tab);
     auto right_val = r->evaluate_expression(sym_tab, var_tab);
     if (holds_alternative<int>(left_val) && holds_alternative<int>(right_val)) {
       int denominator = get<int>(right_val);
-      if (denominator == 0){
+      if (denominator == 0) {
         cout << "Error: Division by 0." << endl;
         return {};
       }
@@ -166,7 +166,7 @@ public:
       return {};
     }
   }
-      
+
 private:
   expression *l;
   expression *r;
@@ -179,24 +179,43 @@ public:
     r = right;
   }
   virtual variant<int, string>
-  evaluate_expression (map<string, shared_ptr<TreeNode>> &sym_tab,
-                                    map<string, variant<int, string>> &var_tab) {
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
     auto left_val = l->evaluate_expression(sym_tab, var_tab);
     auto right_val = r->evaluate_expression(sym_tab, var_tab);
     if (holds_alternative<int>(left_val) && holds_alternative<int>(right_val)) {
-          return get<int>(left_val) % get<int>(right_val);
+      return get<int>(left_val) % get<int>(right_val);
     } else {
       cout << "Error: Invalid types for modulo division." << endl;
       return {};
     }
   }
-    
+
 private:
   expression *l;
   expression *r;
 };
-// End Expression Classes
 
+class negate_expr : public expression {
+public:
+  negate_expr(expression *expr) { e = expr; }
+
+  virtual variant<int, string>
+  evaluate_expression(map<string, shared_ptr<TreeNode>> &sym_tab,
+                      map<string, variant<int, string>> &var_tab) {
+    auto val = e->evaluate_expression(sym_tab, var_tab);
+    if (holds_alternative<int>(val)) {
+      return -get<int>(val);
+    } else {
+      cout << "Error: Invalid type for negation." << endl;
+      return {};
+    }
+  }
+
+private:
+  expression *e;
+};
+// End Expression Classes
 
 // Begin Statement Classes
 class statement {
