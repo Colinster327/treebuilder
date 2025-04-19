@@ -27,4 +27,20 @@ for i in [1:3] {
     };
 };
 
+for i in [1:3] {
+    buildnode {
+        name = "C" + 12 / i;
+        weight = 5;
+        isachildof = "C";
+    };
+};
+
+for i in [1:2] {
+    buildnode {
+        name = "D" + 15 % i;
+        weight = 5;
+        isachildof = "D";
+    };
+};
+
 print("root");
