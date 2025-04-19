@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include <variant>
+#include <vector>
 
 using namespace std;
 
@@ -141,7 +142,7 @@ public:
     if (it != sym_tab.end()) {
       this->traverse_tree(it->second);
     } else {
-      cout << "Error: Variable not found in symbol table." << endl;
+      cout << "Error: Tree node not found." << endl;
     }
     cout << endl;
   }
@@ -237,6 +238,70 @@ private:
   expression *n;
   expression *w;
   expression *p;
+};
+
+class for_statement : public statement {
+public:
+  for_statement(string var, expression *start, expression *end,
+                compound_statement *stmt) {
+    v = var;
+    s = start;
+    e = end;
+    body = stmt;
+    l = NULL;
+  }
+
+  for_statement(string var, vector<expression *> *list,
+                compound_statement *stmt) {
+    v = var;
+    l = list;
+    body = stmt;
+    s = NULL;
+    e = NULL;
+  }
+
+  virtual void evaluate_statement(map<string, TreeNode *> &tree_tab,
+                                  map<string, variant<int, string>> &var_tab) {
+    if (s && e) {
+      auto start_val = s->evaluate_expression(tree_tab, var_tab);
+      auto end_val = e->evaluate_expression(tree_tab, var_tab);
+
+      if (holds_alternative<int>(start_val) &&
+          holds_alternative<int>(end_val)) {
+        // Create a new variable table for the loop to ensure scope
+        map<string, variant<int, string>> new_var_tab = var_tab;
+
+        for (int i = get<int>(start_val); i <= get<int>(end_val); ++i) {
+          new_var_tab[this->v] = i;
+          body->evaluate_statement(tree_tab, new_var_tab);
+        }
+      } else {
+        cout << "Error: Start and end values must be integers." << endl;
+      }
+    } else if (l) {
+      // Create a new variable table for the loop to ensure scope
+      map<string, variant<int, string>> new_var_tab = var_tab;
+
+      for (auto &item : *l) {
+        auto item_val = item->evaluate_expression(tree_tab, var_tab);
+        if (holds_alternative<string>(item_val)) {
+          new_var_tab[this->v] = get<string>(item_val);
+          body->evaluate_statement(tree_tab, new_var_tab);
+        } else {
+          cout << "Error: List items must be strings." << endl;
+        }
+      }
+    } else {
+      cout << "Error: Invalid for statement." << endl;
+    }
+  }
+
+private:
+  string v;
+  expression *s;
+  expression *e;
+  compound_statement *body;
+  vector<expression *> *l;
 };
 // End Statement Classes
 

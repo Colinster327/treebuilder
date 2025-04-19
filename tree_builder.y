@@ -20,6 +20,7 @@
   expression *e_ptr;
   statement *s_ptr;
   compound_statement *c_ptr;
+  vector<expression *> *e_list_ptr;
 }
 
 %{
@@ -29,8 +30,9 @@
 
 %type <s_val> TKID TKINT TKSTR
 %type <e_ptr> expression
-%type <s_ptr> statement print_statement node_statement
+%type <s_ptr> statement print_statement node_statement for_statement
 %type <c_ptr> prog start_var
+%type <e_list_ptr> expression_list
 
 %%
 
@@ -51,6 +53,7 @@ prog:
 statement: 
   | print_statement { $$ = $1; }
   | node_statement { $$ = $1; }
+  | for_statement { $$ = $1; }
   ;
 
 expression:
@@ -69,6 +72,18 @@ node_statement:
     { $$ = new node_statement($5, $9, $13); }
   | TKNODE '{' TKNAME '=' expression ';' TKWEIGHT '=' expression ';' '}' ';'
     { $$ = new node_statement($5, $9); }
+  ;
+
+for_statement:
+  | TKFOR TKID TKIN '[' expression ':' expression ']' '{' prog '}' ';'
+    { $$ = new for_statement($2, $5, $7, $10); }
+  | TKFOR TKID TKIN '[' expression_list ']' '{' prog '}' ';'
+    { $$ = new for_statement($2, $5, $8); }
+  ;
+
+expression_list:
+  | expression { $$ = new vector<expression *>(); $$->push_back($1); }
+  | expression_list ',' expression { $$ = $1; $$->push_back($3); }
   ;
 
 %%
