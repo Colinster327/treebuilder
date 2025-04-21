@@ -21,7 +21,8 @@ ID ({LETTER}|{DIGIT})({LETTER}|{DIGIT}|_)*
 
 %%
 
-[ \t\n\r\f\v]   { linecount ++; }
+[ ]             { /* ignore whitespace */ }
+[\t\n\r\f\v]    { linecount ++; }
 "isachildof"    { return TKCHILDOF; }
 "buildnode"     { return TKNODE; }
 "weight"        { return TKWEIGHT; }
